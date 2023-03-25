@@ -1,12 +1,13 @@
-
-
 <!DOCTYPE html>
 <html>
   <head>
     <style>
       #DBTreeView, #CachedTreeView {
+        min-width: 200px;
+        height: 100%;
         font-family: Arial, sans-serif;
-        font-size: 18px;
+        font-size: 12px;
+        border: 1px solid black;
       }
 
       #DBTreeView ul,#CachedTreeView ul {
@@ -32,47 +33,60 @@
         background-color: #eee;
       }
 
-      #text-area {
-        margin-top: 10px;
-        width: 100%;
-        height: 40px;
-        resize: none;
-        overflow-y: auto;
+      #Button   {
+        margin: 5px 10px;
+        text-align: center;
       }
+      div[style="display:flex;"] {
+      align-items: center;
+    }
     </style>
   </head>
   <body>
-    <div id="DBTreeView">
+    <div style="display:flex;">
+      <div id="CachedTreeView"></div>
+      <div id="Button"><button onclick="callAPI()">&lt;&lt;&lt;</button></div>
+      <div id="DBTreeView">
         <ul>
             {{template "item" .}}
         </ul>
     </div>
     <!-- <textarea id="text-area"></textarea> -->
     <!-- Контейнер для отображения результата -->
-	  <div id="CachedTreeView"></div>
+
+  </div>
     <script>
       // Получаем элементы DOM
 const dbTreeView = document.getElementById('DBTreeView');
 const cachedTreeView  = document.getElementById('DBTreeView');
 // const textArea = document.getElementById('text-area');
-
+var selectedItemId = null;
 // Добавляем обработчик событий на клик в дереве
 dbTreeView.addEventListener('click', (event) => {
   const target = event.target;
 
   // Проверяем, что клик был по span
   if (target.tagName === 'SPAN') {
+    if (selectedItemId !== null){
+          // Изменяем фон элемента при наведении мыши
+        document.getElementById(selectedItemId).style.backgroundColor = '#fff';
+    }
+    // Изменяем фон элемента при наведении мыши
+    target.style.backgroundColor = '#eee';
+    selectedItemId = target.id;
+    // console.log(selectedItemId)
+    event.stopPropagation();
+  }
+});
+function callAPI() {
+  const target = document.getElementById(selectedItemId);
 
-    // Получаем текст из элемента, по которому был клик
-    const text = target.textContent.trim();
-    const parent = parseInt(target.getAttribute('parent'))
-    const id = parseInt(target.getAttribute('nodeId'))
-    
-    // Получаем текстовое поле и устанавливаем его значение
-    // textArea.value = text;
-    // Вызываем ваш метод API
+  const text = target.textContent.trim();
+  const parent = parseInt(target.getAttribute('parent'))
+  const id = parseInt(target.getAttribute('nodeId'))
 
-      fetch("/method", {
+  if (selectedItemId !== null) {
+    fetch("/method", {
 				method: "POST",
 				body: JSON.stringify({ id: id, text:text, parent:parent}),
         headers: {
@@ -84,7 +98,7 @@ dbTreeView.addEventListener('click', (event) => {
 					// Если ответ успешный, то получаем его тело и встроим его в элемент с id="CachedTreeView"
 					response.text().then(function(html) {
 						document.getElementById("CachedTreeView").innerHTML = html;
-            console.log(html);
+            // console.log(html);
 					});
 				} else {
 					// Если ответ не успешный, то выводим сообщение об ошибке
@@ -94,56 +108,53 @@ dbTreeView.addEventListener('click', (event) => {
 				// Обработка ошибок
 				alert("Error: " + error.message);
 			});
-    // Отменяем всплытие события
-    event.stopPropagation();
   }
-});
+}
+// // Добавляем обработчик событий на наведение мыши на span
+// dbTreeView.addEventListener('mouseover', (event) => {
+//   const target = event.target;
+
+//   // Проверяем, что наведение было на span
+//   if (target.tagName === 'SPAN') {
+
+//     // Изменяем фон элемента при наведении мыши
+//     target.style.backgroundColor = '#eee';
+//   }
+// });
+
+// // Добавляем обработчик событий на уход мыши с span
+// dbTreeView.addEventListener('mouseout', (event) => {
+//   const target = event.target;
+
+//   // Проверяем, что уход был с span
+//   if (target.tagName === 'SPAN') {
+
+//     // Возвращаем исходный фон элемента при уходе мыши
+//     target.style.backgroundColor = '#fff';
+//   }
+// });
 
 // Добавляем обработчик событий на наведение мыши на span
-dbTreeView.addEventListener('mouseover', (event) => {
-  const target = event.target;
+// cachedTreeView.addEventListener('mouseover', (event) => {
+//   const target = event.target;
 
-  // Проверяем, что наведение было на span
-  if (target.tagName === 'SPAN') {
+//   // Проверяем, что наведение было на span
+//   if (target.tagName === 'SPAN') {
 
-    // Изменяем фон элемента при наведении мыши
-    target.style.backgroundColor = '#eee';
-  }
-});
+//     // Изменяем фон элемента при наведении мыши
+//     target.style.backgroundColor = '#eee';
+//   }
+// });
 
-// Добавляем обработчик событий на уход мыши с span
-dbTreeView.addEventListener('mouseout', (event) => {
-  const target = event.target;
+// // Добавляем обработчик событий на уход мыши с span
+// cachedTreeView.addEventListener('mouseout', (event) => {
+//   const target = event.target;
+//   // Проверяем, что уход был с span
+//   if (target.tagName === 'SPAN') {
 
-  // Проверяем, что уход был с span
-  if (target.tagName === 'SPAN') {
-
-    // Возвращаем исходный фон элемента при уходе мыши
-    target.style.backgroundColor = '#fff';
-  }
-});
-
-// Добавляем обработчик событий на наведение мыши на span
-cachedTreeView.addEventListener('mouseover', (event) => {
-  const target = event.target;
-
-  // Проверяем, что наведение было на span
-  if (target.tagName === 'SPAN') {
-
-    // Изменяем фон элемента при наведении мыши
-    target.style.backgroundColor = '#eee';
-  }
-});
-
-// Добавляем обработчик событий на уход мыши с span
-cachedTreeView.addEventListener('mouseout', (event) => {
-  const target = event.target;
-  // Проверяем, что уход был с span
-  if (target.tagName === 'SPAN') {
-
-    // Возвращаем исходный фон элемента при уходе мыши
-    target.style.backgroundColor = '#fff';
-  }
-});
+//     // Возвращаем исходный фон элемента при уходе мыши
+//     target.style.backgroundColor = '#fff';
+//   }
+// });
 
 </script>

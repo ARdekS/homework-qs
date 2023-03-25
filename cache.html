@@ -1,5 +1,5 @@
 <ul>
-    {{range .Storage}}
-        <li><span nodeId="{{.ID}}" parent="{{.Parent}}">{{.Text}}</span></li>
+    {{range .}}
+        {{template "item" .}}
     {{end}}
 </ul>
