@@ -1,0 +1,9 @@
+{{define "item"}}
+    <li><span nodeId="{{.ID}}" parent="{{.Parent}}">{{.Text}}</span></li>
+    {{if .Nodes}}
+    <ul>{{range .Nodes}}
+            {{template "item" .}}
+        {{end}}
+    </ul>
+    {{end}}
+{{end}}
