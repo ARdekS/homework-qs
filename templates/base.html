@@ -44,49 +44,120 @@
   </head>
   <body>
     <div style="display:flex;">
-      <div id="CachedTreeView"></div>
-      <div id="Button"><button onclick="callAPI()">&lt;&lt;&lt;</button></div>
+      <div id="CachedTreeView">
+        <ul>
+          {{range .TreeCache.ReturnItems}}
+              {{template "item" .}}
+          {{end}}
+      </ul>
+      </div>
+      <div><div id="ButtonToCache"><button onclick="addToCache()">&lt;&lt;&lt;</button></div>
+      <div id="ButtonToStorage"><button onclick="addToStorage()">&gt;&gt;&gt;</button></div>
+    </div>
+      
       <div id="DBTreeView">
         <ul>
-            {{template "item" .}}
+            {{template "item" .TreeStorage.Head}}
         </ul>
     </div>
-    <!-- <textarea id="text-area"></textarea> -->
-    <!-- Контейнер для отображения результата -->
-
   </div>
+  <textarea id="text-area"></textarea>
+  <div id="ButtonRename"><button onclick="renameItem()">Rename</button></div>
     <script>
       // Получаем элементы DOM
 const dbTreeView = document.getElementById('DBTreeView');
-const cachedTreeView  = document.getElementById('DBTreeView');
-// const textArea = document.getElementById('text-area');
-var selectedItemId = null;
+const cachedTreeView  = document.getElementById('CachedTreeView');
+const textArea = document.getElementById('text-area');
+var selectedDBItemId = null;
+var selectedCacheItemId = null;
+// Добавляем обработчик событий на клик в дереве
+
+
 // Добавляем обработчик событий на клик в дереве
 dbTreeView.addEventListener('click', (event) => {
   const target = event.target;
 
   // Проверяем, что клик был по span
   if (target.tagName === 'SPAN') {
-    if (selectedItemId !== null){
-          // Изменяем фон элемента при наведении мыши
-        document.getElementById(selectedItemId).style.backgroundColor = '#fff';
+
+    if (selectedDBItemId !== null){
+        // Изменяем фон элемента при наведении мыши
+        document.getElementById(selectedDBItemId).style.backgroundColor = '#fff';
     }
     // Изменяем фон элемента при наведении мыши
     target.style.backgroundColor = '#eee';
-    selectedItemId = target.id;
-    // console.log(selectedItemId)
+    selectedDBItemId = target.id;
+    // console.log(selectedDBItemId)
     event.stopPropagation();
   }
 });
-function callAPI() {
-  const target = document.getElementById(selectedItemId);
 
+CachedTreeView.addEventListener('click', (event) => {
+  const target = event.target;
+
+  // Проверяем, что клик был по span
+  if (target.tagName === 'SPAN') {
+    // Получаем текст из элемента, по которому был клик
+    const text = target.textContent.trim();
+    
+    // Получаем текстовое поле и устанавливаем его значение
+    textArea.value = text;
+    if (selectedCacheItemId !== null){
+        // Изменяем фон элемента при наведении мыши
+        document.getElementById(selectedCacheItemId).style.backgroundColor = '#fff';
+    }
+    // Изменяем фон элемента при наведении мыши
+    target.style.backgroundColor = '#eee';
+    selectedCacheItemId = target.id;
+    // console.log(selectedCacheItemId)
+    event.stopPropagation();
+  }
+});
+function renameItem() {
+  if (selectedCacheItemId !== null) {
+    const target = document.getElementById(selectedCacheItemId);
+    const text = textArea.value.trim();
+    const isChild = target.getAttribute('isChild')
+    const parent = parseInt(target.getAttribute('parent'))
+    const id = parseInt(target.getAttribute('nodeId'))
+    
+    // target.textContent = text
+    fetch("/renameItem", {
+				method: "POST",
+				body: JSON.stringify({ id: id, text:text, parent:parent, isChild:isChild}),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+			}).then(function(response) {
+				// Обрабатываем ответ от сервера
+				if (response.ok) {
+					// Если ответ успешный, то получаем его тело и встроим его в элемент с id="CachedTreeView"
+					response.text().then(function(html) {
+						document.getElementById("CachedTreeView").innerHTML = html;
+            // console.log(html);
+					});
+				} else {
+					// Если ответ не успешный, то выводим сообщение об ошибке
+					alert("Error: " + response.status);
+				}
+			}).catch(function(error) {
+				// Обработка ошибок
+				alert("Error: " + error.message);
+			});
+    document.getElementById(selectedCacheItemId).style.backgroundColor = '#fff';
+    selectedCacheItemId = null
+    textArea.value = null;
+    }
+  
+}
+function addToCache() {
+  const target = document.getElementById(selectedDBItemId);
   const text = target.textContent.trim();
   const parent = parseInt(target.getAttribute('parent'))
   const id = parseInt(target.getAttribute('nodeId'))
 
-  if (selectedItemId !== null) {
-    fetch("/method", {
+  if (selectedDBItemId !== null) {
+    fetch("/addToCache", {
 				method: "POST",
 				body: JSON.stringify({ id: id, text:text, parent:parent}),
         headers: {
@@ -108,7 +179,30 @@ function callAPI() {
 				// Обработка ошибок
 				alert("Error: " + error.message);
 			});
-  }
+    document.getElementById(selectedDBItemId).style.backgroundColor = '#fff';
+    }
+}
+function addToStorage() {
+  fetch("/addToStorage", {
+				method: "POST",
+				body: JSON.stringify({ }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+			}).then(function(response) {
+				if (response.ok) {
+					response.text().then(function(html) {
+						document.getElementById("DBTreeView").innerHTML = html;
+            // console.log(html);
+					});
+				} else {
+					alert("Error: " + response.status);
+				}
+			}).catch(function(error) {
+				// Обработка ошибок
+				alert("Error: " + error.message);
+			});
+    
 }
 // // Добавляем обработчик событий на наведение мыши на span
 // dbTreeView.addEventListener('mouseover', (event) => {
