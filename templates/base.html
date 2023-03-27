@@ -1,3 +1,4 @@
+{{define "base"}}
 <!DOCTYPE html>
 <html>
   <head>
@@ -45,20 +46,11 @@
   <body>
     <div style="display:flex;">
       <div id="CachedTreeView">
-        <ul>
-          {{range .TreeCache.ReturnItems}}
-              {{template "item" .}}
-          {{end}}
-      </ul>
       </div>
       <div><div id="ButtonToCache"><button onclick="addToCache()">&lt;&lt;&lt;</button></div>
       <div id="ButtonToStorage"><button onclick="addToStorage()">&gt;&gt;&gt;</button></div>
     </div>
-      
       <div id="DBTreeView">
-        <ul>
-            {{template "item" .TreeStorage.Head}}
-        </ul>
     </div>
   </div>
   <textarea id="text-area"></textarea>
@@ -113,6 +105,56 @@ CachedTreeView.addEventListener('click', (event) => {
     event.stopPropagation();
   }
 });
+
+  
+function getStorage() {
+  fetch("/getStorage", {
+				method: "POST",
+				body: JSON.stringify({}),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+			}).then(function(response) {
+				// Обрабатываем ответ от сервера
+				if (response.ok) {
+					// Если ответ успешный, то получаем его тело и встроим его в элемент с id="CachedTreeView"
+					response.text().then(function(html) {
+						document.getElementById("DBTreeView").innerHTML = html;
+            // console.log(html);
+					});
+				} else {
+					// Если ответ не успешный, то выводим сообщение об ошибке
+					alert("Error: " + response.status);
+				}
+			}).catch(function(error) {
+				// Обработка ошибок
+				alert("Error: " + error.message);
+			});
+}
+function getCache() {
+  fetch("/getCache", {
+				method: "POST",
+				body: JSON.stringify({}),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+			}).then(function(response) {
+				// Обрабатываем ответ от сервера
+				if (response.ok) {
+					// Если ответ успешный, то получаем его тело и встроим его в элемент с id="CachedTreeView"
+					response.text().then(function(html) {
+						document.getElementById("CachedTreeView").innerHTML = html;
+            // console.log(html);
+					});
+				} else {
+					// Если ответ не успешный, то выводим сообщение об ошибке
+					alert("Error: " + response.status);
+				}
+			}).catch(function(error) {
+				// Обработка ошибок
+				alert("Error: " + error.message);
+			});
+}
 function renameItem() {
   if (selectedCacheItemId !== null) {
     const target = document.getElementById(selectedCacheItemId);
@@ -250,5 +292,11 @@ function addToStorage() {
 //     target.style.backgroundColor = '#fff';
 //   }
 // });
-
+window.addEventListener("load", myFunction);
+        
+        function myFunction() {
+          getStorage();
+          getCache();
+        }
 </script>
+{{end}}

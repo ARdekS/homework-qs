@@ -1,7 +1,9 @@
 {{define "item"}}
-    <li><span id="{{.ID}}" nodeId="{{.ID}}" isChild ={{.IsChild}} parent="{{.ParentID}}">{{.Text}}</span></li>
-    {{if .Nodes}}
-    <ul>{{range .Nodes}}
+{{ $node := (getNode .)}}
+    <li><span id="{{$node.ID}}" nodeId="{{$node.ID}}" parent="{{$node.ParentID}}">{{$node.Text}}</span></li>
+    {{if $node.Nodes}}
+    <ul>
+        {{range $node.Nodes}}
             {{template "item" .}}
         {{end}}
     </ul>

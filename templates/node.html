@@ -1,0 +1,11 @@
+{{define "node"}}
+<div>
+    {{ $node := (getNode .)}}
+    {{ $node.Text }}
+    {{if $node.Nodes}}
+    {{range $node.Nodes}}
+            {{template "node" .}}
+        {{end}}
+    {{end}}
+</div>
+{{end}}
