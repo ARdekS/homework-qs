@@ -15,7 +15,7 @@ func TestMyFunction(t *testing.T) {
 	mockNode := mocks.NewMockNode(ctrl)
 
 	// настройка поведения мока
-	mockNode.EXPECT().Edit()
+	mockNode.EXPECT().Edit(mockNode).Return()
 
 	// тестирование функции с использованием мока
 	result, err := myFunction(mockDB, "key")
