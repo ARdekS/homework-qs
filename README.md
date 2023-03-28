@@ -40,7 +40,7 @@ CachedTreeView имеет следующие команды в своей пан
 # Интерфейс
 
 <p align="center">
-<image  src="./images/mainpage.png" alt="main page with 2 tree view" width=33% height=33%>
+<image  src="./images/mainpage.png" alt="main page with 2 tree view" width=50% height=50%>
 </p>
 
 * "<<<" Перенисите выбранный объект из БД в КЭШ
