@@ -63,7 +63,7 @@ func (h *Handler) RenameItem(w http.ResponseWriter, r *http.Request) {
 		h.Cache.EditItem(node)
 		//формирование HTML и Ответа
 		tmpl := h.getCacheTemplate()
-		tmpl.ExecuteTemplate(w, "cache", h.Cache.ReturnItems())
+		tmpl.ExecuteTemplate(w, "cache", h.Cache.Heads)
 	} else {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
@@ -87,7 +87,7 @@ func (h *Handler) DeleteItem(w http.ResponseWriter, r *http.Request) {
 		h.Cache.DeleteItem(node.ID)
 		//формирование HTML и Ответа
 		tmpl := h.getCacheTemplate()
-		tmpl.ExecuteTemplate(w, "cache", h.Cache.ReturnItems())
+		tmpl.ExecuteTemplate(w, "cache", h.Cache.Heads)
 	} else {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
@@ -111,7 +111,7 @@ func (h *Handler) NewItem(w http.ResponseWriter, r *http.Request) {
 		h.Cache.NewItme(node)
 		//формирование HTML и Ответа
 		tmpl := h.getCacheTemplate()
-		tmpl.ExecuteTemplate(w, "cache", h.Cache.ReturnItems())
+		tmpl.ExecuteTemplate(w, "cache", h.Cache.Heads)
 	} else {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
@@ -136,7 +136,7 @@ func (h *Handler) AddToCache(w http.ResponseWriter, r *http.Request) {
 		h.Cache.AddItem(n)
 		//
 		tmpl := h.getCacheTemplate()
-		tmpl.ExecuteTemplate(w, "cache", h.Cache.ReturnItems())
+		tmpl.ExecuteTemplate(w, "cache", h.Cache.Heads)
 	} else {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
@@ -153,7 +153,7 @@ func (h *Handler) CacheToStorage(id int) {
 func (h *Handler) AddToStorage(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 
-		for _, n := range h.Cache.ReturnItems() {
+		for _, n := range h.Cache.Heads {
 			h.CacheToStorage(n)
 		}
 
@@ -168,7 +168,7 @@ func (h *Handler) AddToStorage(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetCache(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		tmpl := h.getCacheTemplate()
-		tmpl.ExecuteTemplate(w, "cache", h.Cache.ReturnItems())
+		tmpl.ExecuteTemplate(w, "cache", h.Cache.Heads)
 	} else {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return

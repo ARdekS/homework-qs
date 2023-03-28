@@ -64,17 +64,3 @@ func (c *Cache) DeleteItem(id int) {
 		}
 	}
 }
-
-func (c *Cache) ReturnItems() []int {
-	// var result []int = make([]int, 0, 1)
-	// for k, v := range c.Cache {
-	//  if !v.IsLinked {
-	//      result = append(result, k)
-	//  }
-	// }
-	// sort.SliceStable(result, func(i, j int) bool {
-	//  return result[i] < result[j]
-	// })
-	// return result
-	return c.Heads
-}
