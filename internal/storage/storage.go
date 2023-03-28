@@ -1,8 +1,6 @@
 package storage
 
 import (
-	"fmt"
-
 	"github.com/ARdekS/homework-qs/internal/tree"
 )
 
@@ -32,14 +30,6 @@ func (s *Storage) AddToStorage(n tree.Node) {
 
 	}
 
-}
-
-func (s *Storage) Traverse(i int) {
-	m := s.Storage[i]
-	fmt.Println(m.Text)
-	for _, child := range m.Nodes {
-		s.Traverse(child)
-	}
 }
 
 func (s *Storage) InitTree() {
