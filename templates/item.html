@@ -1,6 +1,12 @@
 {{define "item"}}
 {{ $node := (getNode .)}}
-    <li><span id="{{$node.ID}}" nodeId="{{$node.ID}}" parent="{{$node.ParentID}}">{{$node.Text}}</span></li>
+    <li><span id="{{$node.ID}}" nodeId="{{$node.ID}}" parent="{{$node.ParentID}}">
+        {{if $node.IsDeleted}}
+            <del>{{$node.Text}}</del>
+        {{else}}
+            {{$node.Text}}
+        {{end}}
+    </span></li>
     {{if $node.Nodes}}
     <ul>
         {{range $node.Nodes}}

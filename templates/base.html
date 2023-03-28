@@ -1,9 +1,9 @@
-{{define "base"}}
 <!DOCTYPE html>
 <html>
   <head>
     <style>
-      #DBTreeView, #CachedTreeView {
+      #DBTreeView,
+      #CachedTreeView {
         min-width: 200px;
         height: 100%;
         font-family: Arial, sans-serif;
@@ -11,18 +11,25 @@
         border: 1px solid black;
       }
 
-      #DBTreeView ul,#CachedTreeView ul {
+      #DBTreeView ul,
+      #CachedTreeView ul {
         /* list-style-type: none; */
         padding-left: 20px;
         margin: 0;
       }
 
-      #DBTreeView li, #CachedTreeView li  {
+      #DBTreeView li,
+      #CachedTreeView li {
         margin: 0;
         padding: 0;
       }
 
-      #DBTreeView span, #CachedTreeView span  {
+      button {
+        margin: 5px;
+      }
+
+      #DBTreeView span,
+      #CachedTreeView span {
         display: block;
         padding: 5px 10px;
         background-color: #fff;
@@ -30,273 +37,288 @@
         cursor: pointer;
       }
 
-      #DBTreeView span:hover,#CachedTreeView span:hover {
+      #DBTreeView span:hover,
+      #CachedTreeView span:hover {
         background-color: #eee;
       }
 
-      #Button   {
+      #Button {
         margin: 5px 10px;
         text-align: center;
       }
+
       div[style="display:flex;"] {
-      align-items: center;
-    }
+        align-items: center;
+      }
     </style>
   </head>
   <body>
     <div style="display:flex;">
-      <div id="CachedTreeView">
+      <div id="CachedTreeView"></div>
+      <div>
+        <div id="ButtonToCache">
+          <button onclick="addToCache()">&lt;&lt;&lt;</button>
+        </div>
+        <div id="ButtonToStorage">
+          <button onclick="addToStorage()">&gt;&gt;&gt;</button>
+        </div>
       </div>
-      <div><div id="ButtonToCache"><button onclick="addToCache()">&lt;&lt;&lt;</button></div>
-      <div id="ButtonToStorage"><button onclick="addToStorage()">&gt;&gt;&gt;</button></div>
+      <div id="DBTreeView"></div>
     </div>
-      <div id="DBTreeView">
+    <textarea id="text-area"></textarea>
+    <div style="display:flex;">
+      <div id="ButtonRename">
+        <button onclick="renameItem()">Rename</button>
+      </div>
+      <div id="ButtonDelete">
+        <button onclick="deleteItem()">Delete</button>
+      </div>
+      <div id="ButtonNew">
+        <button onclick="newItem()">New</button>
+      </div>
+      <div id="ButtonReset">
+        <button onclick="reset()">Reset</button>
+      </div>
     </div>
-  </div>
-  <textarea id="text-area"></textarea>
-  <div id="ButtonRename"><button onclick="renameItem()">Rename</button></div>
     <script>
-      // Получаем элементы DOM
-const dbTreeView = document.getElementById('DBTreeView');
-const cachedTreeView  = document.getElementById('CachedTreeView');
-const textArea = document.getElementById('text-area');
-var selectedDBItemId = null;
-var selectedCacheItemId = null;
-// Добавляем обработчик событий на клик в дереве
-
-
-// Добавляем обработчик событий на клик в дереве
-dbTreeView.addEventListener('click', (event) => {
-  const target = event.target;
-
-  // Проверяем, что клик был по span
-  if (target.tagName === 'SPAN') {
-
-    if (selectedDBItemId !== null){
-        // Изменяем фон элемента при наведении мыши
-        document.getElementById(selectedDBItemId).style.backgroundColor = '#fff';
-    }
-    // Изменяем фон элемента при наведении мыши
-    target.style.backgroundColor = '#eee';
-    selectedDBItemId = target.id;
-    // console.log(selectedDBItemId)
-    event.stopPropagation();
-  }
-});
-
-CachedTreeView.addEventListener('click', (event) => {
-  const target = event.target;
-
-  // Проверяем, что клик был по span
-  if (target.tagName === 'SPAN') {
-    // Получаем текст из элемента, по которому был клик
-    const text = target.textContent.trim();
-    
-    // Получаем текстовое поле и устанавливаем его значение
-    textArea.value = text;
-    if (selectedCacheItemId !== null){
-        // Изменяем фон элемента при наведении мыши
-        document.getElementById(selectedCacheItemId).style.backgroundColor = '#fff';
-    }
-    // Изменяем фон элемента при наведении мыши
-    target.style.backgroundColor = '#eee';
-    selectedCacheItemId = target.id;
-    // console.log(selectedCacheItemId)
-    event.stopPropagation();
-  }
-});
-
-  
-function getStorage() {
-  fetch("/getStorage", {
-				method: "POST",
-				body: JSON.stringify({}),
-        headers: {
-          'Content-Type': 'application/json'
+      const dbTreeView = document.getElementById('DBTreeView');
+      const cachedTreeView = document.getElementById('CachedTreeView');
+      const textArea = document.getElementById('text-area');
+      var selectedDBItemId = null;
+      var selectedCacheItemId = null;
+      // Добавляем обработчик событий на клик в дереве
+      dbTreeView.addEventListener('click', (event) => {
+        const target = event.target;
+        if (target.tagName === 'SPAN') {
+          if (selectedDBItemId !== null) {
+            document.getElementById(selectedDBItemId).style.backgroundColor = '#fff';
+          }
+          target.style.backgroundColor = '#eee';
+          selectedDBItemId = target.id;
+          event.stopPropagation();
         }
-			}).then(function(response) {
-				// Обрабатываем ответ от сервера
-				if (response.ok) {
-					// Если ответ успешный, то получаем его тело и встроим его в элемент с id="CachedTreeView"
-					response.text().then(function(html) {
-						document.getElementById("DBTreeView").innerHTML = html;
-            // console.log(html);
-					});
-				} else {
-					// Если ответ не успешный, то выводим сообщение об ошибке
-					alert("Error: " + response.status);
-				}
-			}).catch(function(error) {
-				// Обработка ошибок
-				alert("Error: " + error.message);
-			});
-}
-function getCache() {
-  fetch("/getCache", {
-				method: "POST",
-				body: JSON.stringify({}),
-        headers: {
-          'Content-Type': 'application/json'
+      });
+      CachedTreeView.addEventListener('click', (event) => {
+        const target = event.target;
+        if (target.tagName === 'SPAN') {
+          const text = target.textContent.trim();
+          textArea.value = text;
+          if (selectedCacheItemId !== null) {
+            document.getElementById(selectedCacheItemId).style.backgroundColor = '#fff';
+          }
+          target.style.backgroundColor = '#eee';
+          selectedCacheItemId = target.id;
+          event.stopPropagation();
         }
-			}).then(function(response) {
-				// Обрабатываем ответ от сервера
-				if (response.ok) {
-					// Если ответ успешный, то получаем его тело и встроим его в элемент с id="CachedTreeView"
-					response.text().then(function(html) {
-						document.getElementById("CachedTreeView").innerHTML = html;
-            // console.log(html);
-					});
-				} else {
-					// Если ответ не успешный, то выводим сообщение об ошибке
-					alert("Error: " + response.status);
-				}
-			}).catch(function(error) {
-				// Обработка ошибок
-				alert("Error: " + error.message);
-			});
-}
-function renameItem() {
-  if (selectedCacheItemId !== null) {
-    const target = document.getElementById(selectedCacheItemId);
-    const text = textArea.value.trim();
-    const isChild = target.getAttribute('isChild')
-    const parent = parseInt(target.getAttribute('parent'))
-    const id = parseInt(target.getAttribute('nodeId'))
-    
-    // target.textContent = text
-    fetch("/renameItem", {
-				method: "POST",
-				body: JSON.stringify({ id: id, text:text, parent:parent, isChild:isChild}),
-        headers: {
-          'Content-Type': 'application/json'
+      });
+      //Получааем элементы DB и отрисовываем в DBTreeView
+      function getStorage() {
+        fetch("/getStorage", {
+          method: "GET",
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }).then(function(response) {
+          if (response.ok) {
+            response.text().then(function(html) {
+              document.getElementById("DBTreeView").innerHTML = html;
+            });
+          } else {
+            alert("Error: " + response.status);
+          }
+        }).catch(function(error) {
+          alert("Error: " + error.message);
+        });
+      }
+      //Получааем элементы кэша и отрисовываем в CachedTreeView
+      function getCache() {
+        fetch("/getCache", {
+          method: "GET",
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }).then(function(response) {
+          if (response.ok) {
+            response.text().then(function(html) {
+              document.getElementById("CachedTreeView").innerHTML = html;
+              // console.log(html);
+            });
+          } else {
+            alert("Error: " + response.status);
+          }
+        }).catch(function(error) {
+          alert("Error: " + error.message);
+        });
+      }
+      //переименовываем элемент в кэше
+      function renameItem() {
+        if (selectedCacheItemId !== null) {
+          const target = document.getElementById(selectedCacheItemId);
+          const text = textArea.value.trim();
+          const parent = parseInt(target.getAttribute('parent'))
+          const id = parseInt(target.getAttribute('nodeId'))
+          fetch("/renameItem", {
+            method: "POST",
+            body: JSON.stringify({
+              id: id,
+              text: text,
+              parent: parent
+            }),
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }).then(function(response) {
+            if (response.ok) {
+              response.text().then(function(html) {
+                document.getElementById("CachedTreeView").innerHTML = html;
+              });
+            } else {
+              alert("Error: " + response.status);
+            }
+          }).catch(function(error) {
+            alert("Error: " + error.message);
+          });
+          //unselect item
+          document.getElementById(selectedCacheItemId).style.backgroundColor = '#fff';
+          selectedCacheItemId = null
+          textArea.value = null;
         }
-			}).then(function(response) {
-				// Обрабатываем ответ от сервера
-				if (response.ok) {
-					// Если ответ успешный, то получаем его тело и встроим его в элемент с id="CachedTreeView"
-					response.text().then(function(html) {
-						document.getElementById("CachedTreeView").innerHTML = html;
-            // console.log(html);
-					});
-				} else {
-					// Если ответ не успешный, то выводим сообщение об ошибке
-					alert("Error: " + response.status);
-				}
-			}).catch(function(error) {
-				// Обработка ошибок
-				alert("Error: " + error.message);
-			});
-    document.getElementById(selectedCacheItemId).style.backgroundColor = '#fff';
-    selectedCacheItemId = null
-    textArea.value = null;
-    }
-  
-}
-function addToCache() {
-  const target = document.getElementById(selectedDBItemId);
-  const text = target.textContent.trim();
-  const parent = parseInt(target.getAttribute('parent'))
-  const id = parseInt(target.getAttribute('nodeId'))
+      }
 
-  if (selectedDBItemId !== null) {
-    fetch("/addToCache", {
-				method: "POST",
-				body: JSON.stringify({ id: id, text:text, parent:parent}),
-        headers: {
-          'Content-Type': 'application/json'
+      function deleteItem() {
+        if (selectedCacheItemId !== null) {
+          const target = document.getElementById(selectedCacheItemId);
+          const id = parseInt(target.getAttribute('nodeId'))
+          fetch("/deleteItem", {
+            method: "POST",
+            body: JSON.stringify({
+              id: id
+            }),
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }).then(function(response) {
+            if (response.ok) {
+              response.text().then(function(html) {
+                document.getElementById("CachedTreeView").innerHTML = html;
+              });
+            } else {
+              alert("Error: " + response.status);
+            }
+          }).catch(function(error) {
+            alert("Error: " + error.message);
+          });
+          //unselect item
+          document.getElementById(selectedCacheItemId).style.backgroundColor = '#fff';
+          selectedCacheItemId = null
         }
-			}).then(function(response) {
-				// Обрабатываем ответ от сервера
-				if (response.ok) {
-					// Если ответ успешный, то получаем его тело и встроим его в элемент с id="CachedTreeView"
-					response.text().then(function(html) {
-						document.getElementById("CachedTreeView").innerHTML = html;
-            // console.log(html);
-					});
-				} else {
-					// Если ответ не успешный, то выводим сообщение об ошибке
-					alert("Error: " + response.status);
-				}
-			}).catch(function(error) {
-				// Обработка ошибок
-				alert("Error: " + error.message);
-			});
-    document.getElementById(selectedDBItemId).style.backgroundColor = '#fff';
-    }
-}
-function addToStorage() {
-  fetch("/addToStorage", {
-				method: "POST",
-				body: JSON.stringify({ }),
-        headers: {
-          'Content-Type': 'application/json'
+      }
+
+      function newItem() {
+        if (selectedCacheItemId !== null) {
+          const target = document.getElementById(selectedCacheItemId);
+          const id = parseInt(target.getAttribute('nodeId'))
+          fetch("/newItem", {
+            method: "POST",
+            body: JSON.stringify({
+              id: id
+            }),
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }).then(function(response) {
+            if (response.ok) {
+              response.text().then(function(html) {
+                document.getElementById("CachedTreeView").innerHTML = html;
+              });
+            } else {
+              alert("Error: " + response.status);
+            }
+          }).catch(function(error) {
+            alert("Error: " + error.message);
+          });
+          //unselect item
+          document.getElementById(selectedCacheItemId).style.backgroundColor = '#fff';
+          selectedCacheItemId = null
         }
-			}).then(function(response) {
-				if (response.ok) {
-					response.text().then(function(html) {
-						document.getElementById("DBTreeView").innerHTML = html;
-            // console.log(html);
-					});
-				} else {
-					alert("Error: " + response.status);
-				}
-			}).catch(function(error) {
-				// Обработка ошибок
-				alert("Error: " + error.message);
-			});
-    
-}
-// // Добавляем обработчик событий на наведение мыши на span
-// dbTreeView.addEventListener('mouseover', (event) => {
-//   const target = event.target;
-
-//   // Проверяем, что наведение было на span
-//   if (target.tagName === 'SPAN') {
-
-//     // Изменяем фон элемента при наведении мыши
-//     target.style.backgroundColor = '#eee';
-//   }
-// });
-
-// // Добавляем обработчик событий на уход мыши с span
-// dbTreeView.addEventListener('mouseout', (event) => {
-//   const target = event.target;
-
-//   // Проверяем, что уход был с span
-//   if (target.tagName === 'SPAN') {
-
-//     // Возвращаем исходный фон элемента при уходе мыши
-//     target.style.backgroundColor = '#fff';
-//   }
-// });
-
-// Добавляем обработчик событий на наведение мыши на span
-// cachedTreeView.addEventListener('mouseover', (event) => {
-//   const target = event.target;
-
-//   // Проверяем, что наведение было на span
-//   if (target.tagName === 'SPAN') {
-
-//     // Изменяем фон элемента при наведении мыши
-//     target.style.backgroundColor = '#eee';
-//   }
-// });
-
-// // Добавляем обработчик событий на уход мыши с span
-// cachedTreeView.addEventListener('mouseout', (event) => {
-//   const target = event.target;
-//   // Проверяем, что уход был с span
-//   if (target.tagName === 'SPAN') {
-
-//     // Возвращаем исходный фон элемента при уходе мыши
-//     target.style.backgroundColor = '#fff';
-//   }
-// });
-window.addEventListener("load", myFunction);
-        
-        function myFunction() {
-          getStorage();
-          getCache();
+      }
+      function reset() {
+        fetch("/reset", {
+          method: "POST",
+          body: JSON.stringify({
+          }),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }).then(function(response) {
+          if (!response.ok) {
+            alert("Error: " + response.status);
+          }
+        }).catch(function(error) {
+          alert("Error: " + error.message);
+        });
+        selectedCacheItemId = null
+        selectedDBItemId = null
+        init()
+      }
+      //добавить элемент DB в Cache
+      function addToCache() {
+        const target = document.getElementById(selectedDBItemId);
+        const text = target.textContent.trim();
+        const parent = parseInt(target.getAttribute('parent'))
+        const id = parseInt(target.getAttribute('nodeId'))
+        if (selectedDBItemId !== null) {
+          fetch("/addToCache", {
+            method: "POST",
+            body: JSON.stringify({
+              id: id,
+              text: text,
+              parent: parent
+            }),
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }).then(function(response) {
+            if (response.ok) {
+              response.text().then(function(html) {
+                document.getElementById("CachedTreeView").innerHTML = html;
+              });
+            } else {
+              alert("Error: " + response.status);
+            }
+          }).catch(function(error) {
+            alert("Error: " + error.message);
+          });
+          document.getElementById(selectedDBItemId).style.backgroundColor = '#fff';
         }
-</script>
-{{end}}
+      }
+      //Применить все изменения к DB
+      function addToStorage() {
+        fetch("/addToStorage", {
+          method: "POST",
+          body: JSON.stringify({}),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }).then(function(response) {
+          if (response.ok) {
+            response.text().then(function(html) {
+              document.getElementById("DBTreeView").innerHTML = html;
+              // console.log(html);
+            });
+          } else {
+            alert("Error: " + response.status);
+          }
+        }).catch(function(error) {
+          // Обработка ошибок
+          alert("Error: " + error.message);
+        });
+      }
+      //init
+      window.addEventListener("load", init);
+
+      function init() {
+        getStorage();
+        getCache();
+      }
+    </script>
