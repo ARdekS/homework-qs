@@ -27,7 +27,7 @@ func (h *Handler) getCacheTemplate() *template.Template {
 	tmpl := template.New("cache").Funcs(
 		template.FuncMap{
 			"getNode": func(id int) *tree.Node {
-				return h.Cache.GetNode(id)
+				return h.Cache.GetItem(id)
 			},
 		},
 	)
@@ -38,7 +38,7 @@ func (h *Handler) getStorageTemplate() *template.Template {
 	tmpl := template.New("storage").Funcs(
 		template.FuncMap{
 			"getNode": func(id int) *tree.Node {
-				return h.Storage.GetNode(id)
+				return h.Storage.GetItem(id)
 			},
 		},
 	)
@@ -132,7 +132,7 @@ func (h *Handler) AddToCache(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		//
-		n := h.Storage.GetNode(node.ID)
+		n := h.Storage.GetItem(node.ID)
 		h.Cache.AddItem(n)
 		//
 		tmpl := h.getCacheTemplate()
@@ -143,10 +143,13 @@ func (h *Handler) AddToCache(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func (h *Handler) CacheToStorage(id int) {
-	m := h.Cache.GetNode(id)
-	h.Storage.AddToStorage(*m)
-	for _, i := range m.Nodes {
-		h.CacheToStorage(i)
+	m := h.Cache.GetItem(id)
+	deletedItems := h.Storage.AddItem(*m)
+	for _, id := range deletedItems {
+		h.Cache.DeleteItem(id)
+	}
+	for _, id = range m.Nodes {
+		h.CacheToStorage(id)
 	}
 }
 

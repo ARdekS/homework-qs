@@ -15,7 +15,7 @@ func NewCache() *Cache {
 	}
 }
 
-func (c *Cache) GetNode(id int) *tree.Node {
+func (c *Cache) GetItem(id int) *tree.Node {
 	return c.Cache[id]
 }
 
@@ -46,7 +46,7 @@ func (c *Cache) AddItem(n *tree.Node) {
 	}
 }
 func (c *Cache) NewItme(m tree.Node) {
-	n := c.GetNode(m.ID)
+	n := c.GetItem(m.ID)
 	child := n.AddChild()
 	c.AddItem(&child)
 
